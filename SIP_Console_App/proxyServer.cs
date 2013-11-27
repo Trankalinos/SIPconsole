@@ -94,7 +94,7 @@ namespace SIP_Console_App
             }
         }
 
-        public String createResponseMsg(int code, String sipMsg, String from, String to, String callID, String via, String callSeq, String contact, String contentLength, String contentType)
+        public String createResponseMsg(int code, String sipMsg, String from, String to, String callID, String via, String callSeq, String contact, int contentLength, String contentType)
         {
             String protocol = "SIP/2.0/UDP";
             String message = "";
