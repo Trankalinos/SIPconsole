@@ -101,14 +101,14 @@ namespace SIP_Console_App
             String protocol = "SIP/2.0/UDP";
             String message = "";
 
-            message += protocol + " " + code + " " + sipMsg + "\n";
-            message += "Via: " + protocol + " " + via + "\n";
-            message += "To: " + to + "\n";
-            message += "Call-ID: " + callID + "\n";
-            message += "CSeq: " + callSeq + "\n";
-            message += "Contact: " + contact + "\n";
-            message += "Content-Type: " + contentType + "\n";
-            message += "Content-Length: " + contentLength + "\n";
+            message += protocol + " " + code + " " + sipMsg + "\r\n";
+            message += "Via: " + protocol + " " + via + "\r\n";
+            message += "To: " + to + "\r\n";
+            message += "Call-ID: " + callID + "\r\n";
+            message += "CSeq: " + callSeq + "\r\n";
+            message += "Contact: " + contact + "\r\n";
+            message += "Content-Type: " + contentType + "\r\n";
+            message += "Content-Length: " + contentLength + "\r\n";
             
             return message;
         }
@@ -124,14 +124,6 @@ namespace SIP_Console_App
                                    "Contact:", "Content-Type:", "Content-Length:"};
             ArrayList myList = new ArrayList();
             String temp = "";
-            
-            int start = 0;
-            int end = 0;
-            start = msg.IndexOf(header, 0);
-            end = msg.IndexOf("\r\n", start);
-            temp = msg.Substring(start + 4, end - (start + 4));
-
-            kvp.Key("INVITE");
 
             return myList;
         }

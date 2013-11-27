@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
+using System.Net.Sockets;
 
 namespace SIP_Console_App
 {
@@ -20,23 +23,46 @@ namespace SIP_Console_App
             String from;
             String to;
             String tag;
-            int callID;
-            int cSeq;
-            String sSeqType;
+            String callID;
+            String cSeq;
+            String cSeqType = "REGISTER";
             String contact;
-            int maxForwards;
+            String maxForwards;
             String userAgent;
-            int expires;
+            String expires;
             String contentLength;
+            ArrayList myList = new ArrayList();
 
-           /* start = msgRecieved.IndexOf("sip:", 0);
-            end = msgRecieved.IndexOf(" ", start);
-            clientIP = msgRecieved.Substring(start + 4, end - (start + 4));
-            Console.WriteLine(clientIP);*/
+            clientIP = getHeaderData(msgRecieved, "sip:", " ");
             branch = getHeaderData(msgRecieved, "branch=", "\r\n");
+            from = getHeaderData(msgRecieved, "From: <", ">");
+            to = getHeaderData(msgRecieved, "To: <", ">");
+            tag = getHeaderData(msgRecieved, "tag=", "\r\n");
+            callID = getHeaderData(msgRecieved, "Call-ID: ", "\r\n");
+            cSeq = getHeaderData(msgRecieved, "CSeq: ", " REGISTER");
+            contact = getHeaderData(msgRecieved, "Contact: <", ">");
+            maxForwards = getHeaderData(msgRecieved, "Max-Forwards: ", "\r\n");
+            userAgent = getHeaderData(msgRecieved, "User-Agent: ", "\r\n");
+            expires = getHeaderData(msgRecieved, "Expires: ", "\r\n");
+            contentLength = getHeaderData(msgRecieved, "Content-Length: ", "\r\n");
 
+            myList.Add(new KeyValuePair<String, String>("clientIP", clientIP));
+            myList.Add(new KeyValuePair<String, String>("branch", branch));
+            myList.Add(new KeyValuePair<String, String>("from", from));
+            myList.Add(new KeyValuePair<String, String>("to", to));
+            myList.Add(new KeyValuePair<String, String>("tag", tag));
+            myList.Add(new KeyValuePair<String, String>("callID", callID));
+            myList.Add(new KeyValuePair<String, String>("cSeq", cSeq));
+            myList.Add(new KeyValuePair<String, String>("cSeqType", cSeqType));
+            myList.Add(new KeyValuePair<String, String>("contact", contact));
+            myList.Add(new KeyValuePair<String, String>("maxForwards", maxForwards));
+            myList.Add(new KeyValuePair<String, String>("userAgent", userAgent));
+            myList.Add(new KeyValuePair<String, String>("expires", expires));
+            myList.Add(new KeyValuePair<String, String>("contentLength", contentLength));
+
+            RegisterClient(myList);
         }
-        public void RegisterClient(String clientMsgToReg)
+        public void RegisterClient(ArrayList clientMsgToReg)
         {
 
         }
