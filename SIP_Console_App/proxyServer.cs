@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
+
 
 namespace SIP_Console_App
 {
@@ -109,6 +111,42 @@ namespace SIP_Console_App
             message += "Content-Length: " + contentLength + "\n";
             
             return message;
+        }
+
+        // Index of
+        // Substring
+
+        // 
+        public ArrayList processInviteMsg(String header, String msg)
+        {
+            KeyValuePair<String, String> kvp;
+            String[] headers = {"INVITE", "Via:", "To:", "From:", "Call-ID:", "CSeq:", 
+                                   "Contact:", "Content-Type:", "Content-Length:"};
+            ArrayList myList = new ArrayList();
+            String temp = "";
+            
+            int start = 0;
+            int end = 0;
+            start = msg.IndexOf(header, 0);
+            end = msg.IndexOf("\r\n", start);
+            temp = msg.Substring(start + 4, end - (start + 4));
+
+            kvp.Key("INVITE");
+
+            return myList;
+        }
+
+        public String getHeaderData(String msg, String header, String delimiter)
+        {
+            String temp = "";
+            
+            int start = 0;
+            int end = 0;
+            start = msg.IndexOf(header, 0);
+            end = msg.IndexOf(delimiter, start);
+            temp = msg.Substring(start + header.Length, end - (start + header.Length));
+            
+            return temp;
         }
     }
 }
