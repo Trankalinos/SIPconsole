@@ -1,9 +1,8 @@
+\\psf\Home\Documents\Visual Studio 2013\Projects\SIPconsole\SIP_Console_App\bin\Debug\SIP_Console_App.exe.config
+\\psf\Home\Documents\Visual Studio 2013\Projects\SIPconsole\SIP_Console_App\obj\Debug\SIP_Console_App.exe
+\\psf\Home\Documents\Visual Studio 2013\Projects\SIPconsole\SIP_Console_App\obj\Debug\SIP_Console_App.pdb
 C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_App\bin\Debug\SIP_Console_App.exe.config
 C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_App\bin\Debug\SIP_Console_App.exe
 C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_App\bin\Debug\SIP_Console_App.pdb
 C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_App\obj\Debug\SIP_Console_App.exe
 C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_App\obj\Debug\SIP_Console_App.pdb
-C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_App\obj\Debug\SIP_Console_App.csprojResolveAssemblyReference.cache
-\\psf\Home\Documents\Visual Studio 2013\Projects\SIPconsole\SIP_Console_App\bin\Debug\SIP_Console_App.exe.config
-\\psf\Home\Documents\Visual Studio 2013\Projects\SIPconsole\SIP_Console_App\obj\Debug\SIP_Console_App.exe
-\\psf\Home\Documents\Visual Studio 2013\Projects\SIPconsole\SIP_Console_App\obj\Debug\SIP_Console_App.pdb
