@@ -16,6 +16,7 @@ namespace SIP_Console_App
         private redirectServer redirectServer;
         private registrarServer registrarServer;
         private const int listenPort = 5060;
+
         public proxyServer()
         {
             registrarServer = new registrarServer();
@@ -52,7 +53,7 @@ namespace SIP_Console_App
 
         public void sortMessage(String msgRecieved)
         {
-            //Figure out who to send it to, note we only need to figure out the first line of the message to send to 
+            // Figure out who to send it to, note we only need to figure out the first line of the message to send to 
             // know who to send it to. Then we can just forward it and let the other server deal with the rest.
             // parse the first part of the meesage here and then call sipProtocol when you know the message
             int firstSpace = msgRecieved.IndexOf(" ");
@@ -78,7 +79,7 @@ namespace SIP_Console_App
                     registrarServer.recieveMsg(fullMsg);
                     break;
                 case ("INVITE"):
-                    // do something
+                    
                     // This.forward(INVITE)
                 case ("OK"):
                     // do something
@@ -116,26 +117,6 @@ namespace SIP_Console_App
         // Index of
         // Substring
 
-        // 
-        public ArrayList processInviteMsg(String header, String msg)
-        {
-            KeyValuePair<String, String> kvp;
-            String[] headers = {"INVITE", "Via:", "To:", "From:", "Call-ID:", "CSeq:", 
-                                   "Contact:", "Content-Type:", "Content-Length:"};
-            ArrayList myList = new ArrayList();
-            String temp = "";
-            
-            int start = 0;
-            int end = 0;
-            start = msg.IndexOf(header, 0);
-            end = msg.IndexOf("\r\n", start);
-            temp = msg.Substring(start + 4, end - (start + 4));
-
-            kvp.Key("INVITE");
-
-            return myList;
-        }
-
         public String getHeaderData(String msg, String header, String delimiter)
         {
             String temp = "";
@@ -147,6 +128,49 @@ namespace SIP_Console_App
             temp = msg.Substring(start + header.Length, end - (start + header.Length));
             
             return temp;
+        }
+
+        public void fwdReq()
+        {
+
+        }
+
+        public ArrayList receiveInviteMsg(String msg)
+        {
+            ArrayList kvpList = new ArrayList();
+
+            String request = "INVITE";
+            String via = getHeaderData(msg, "Via: ", ";");
+            String branch = getHeaderData(msg, "branch=", " ");
+            String maxForwards = getHeaderData(msg, "Max-Forwards: ", "\r\n");
+            String to = getHeaderData(msg, "To: ", "\r\n");
+            String from = getHeaderData(msg, "From: ", ";");
+            String tag = getHeaderData(msg, "tag=", "\r\n");
+            String callID = getHeaderData(msg, "Call-ID: ", "\r\n");
+            String callSeq = getHeaderData(msg, "CSeq: ", "INVITE");
+            String contact = getHeaderData(msg, "Contact: ", "\r\n");
+            String contentType = getHeaderData(msg, "Content-Type: ", "\r\n");
+            String contentLength = getHeaderData(msg, "Content-Length: ", "\r\n");
+
+            /*String[] headers = {"Request", "Via: ", "branch=", "Max-Forwards: ", "To: ", "From: ", 
+                               "tag=", "Call-ID: ", "CSeq: ", "Contact: ", "Content-Type: ",
+                               "Content-Length: "};
+            */
+
+            kvpList.Add(new KeyValuePair<String, String>("Request: ", request));
+            kvpList.Add(new KeyValuePair<String, String>("Via: ", via));
+            kvpList.Add(new KeyValuePair<String, String>("branch=", branch));
+            kvpList.Add(new KeyValuePair<String, String>("Max-Forwards:", maxForwards));
+            kvpList.Add(new KeyValuePair<String, String>("To: ", to));
+            kvpList.Add(new KeyValuePair<String, String>("From: ", from));
+            kvpList.Add(new KeyValuePair<String, String>("tag=", tag));
+            kvpList.Add(new KeyValuePair<String, String>("Call-ID: ", callID));
+            kvpList.Add(new KeyValuePair<String, String>("CSeq: ", callSeq));
+            kvpList.Add(new KeyValuePair<String, String>("Contact: ", contact));
+            kvpList.Add(new KeyValuePair<String, String>("Content-Type: ", contentType));
+            kvpList.Add(new KeyValuePair<String, String>("Content-Length: ", contentLength));
+
+            return kvpList;
         }
     }
 }
