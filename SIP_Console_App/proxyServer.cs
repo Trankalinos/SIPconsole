@@ -73,7 +73,7 @@ namespace SIP_Console_App
             switch (sipMsg)
             {
                 case ("REGISTER"):
-                    registrarServer.RegisterClient(fullMsg);
+                    registrarServer.recieveMsg(fullMsg);
                     break;
                 case ("INVITE"):
                     // do something

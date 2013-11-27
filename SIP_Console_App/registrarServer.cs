@@ -15,7 +15,7 @@ namespace SIP_Console_App
         //Recieve the message and then do something about it
         public void recieveMsg(String msgRecieved)
         {
-
+           Console.WriteLine(msgRecieved);
         }
         public void RegisterClient(String clientMsgToReg)
         {
