@@ -93,5 +93,22 @@ namespace SIP_Console_App
                 default: return; // do nothing
             }
         }
+
+        public String createResponseMsg(int code, String sipMsg, String from, String to, String callID, String via, String callSeq, String contact, int contentLength, String contentType)
+        {
+            String protocol = "SIP/2.0/UDP";
+            String message = "";
+
+            message += protocol + " " + code + " " + sipMsg + "\n";
+            message += "Via: " + protocol + " " + via + "\n";
+            message += "To: " + to + "\n";
+            message += "Call-ID: " + callID + "\n";
+            message += "CSeq: " + callSeq + "\n";
+            message += "Contact: " + contact + "\n";
+            message += "Content-Type: " + contentType + "\n";
+            message += "Content-Length: " + contentLength + "\n";
+            
+            return message;
+        }
     }
 }
