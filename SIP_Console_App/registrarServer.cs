@@ -72,5 +72,12 @@ namespace SIP_Console_App
             returnString = msgRecieved.Substring(start + headertoFind.Length, end - (start + headertoFind.Length));
             return returnString;
         }
+
+        public Boolean userExists(String username, String address)
+        {
+            // check the location server
+            // if they exist, return true, else return false
+            return true;
+        }
     }
 }
