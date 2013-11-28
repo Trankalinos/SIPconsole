@@ -34,7 +34,8 @@ namespace SIP_Console_App
             String userName = null; ;
             String userIPAddress = null;
             String expiry = null;
-
+            String line = null;
+            Boolean usernameExists = false;
 
 
             foreach(KeyValuePair<String, String> dt in clientInfo) {
@@ -49,8 +50,17 @@ namespace SIP_Console_App
                     userName = getData(dt.Value, ":", "@");
                 }
             }
-            using (StreamWriter wr = File.AppendText("clients.xml"))
+            using (StreamWriter wr = File.AppendText("clients.txt"))
             {
+                StreamReader file = new StreamReader(@"clients.txt");
+                while ((line = file.ReadLine()) != null)
+                {
+                    line = line.Substring(0, line.IndexOf(",", 0));
+                    if (line.Equals(userName))
+                    {
+                        usernameExists = true;
+                    }
+                }
                 wr.WriteLine(userName + "," + userIPAddress + "," + expiry);
             }
         }
