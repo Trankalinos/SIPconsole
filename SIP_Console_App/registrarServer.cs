@@ -16,7 +16,7 @@ namespace SIP_Console_App
         {
         }
         //Recieve the message and then do something about it
-        public void recieveMsg(String msgRecieved)
+        public ArrayList recieveMsg(String msgRecieved)
         {
             String clientIP;
             String branch;
@@ -60,11 +60,7 @@ namespace SIP_Console_App
             myList.Add(new KeyValuePair<String, String>("expires", expires));
             myList.Add(new KeyValuePair<String, String>("contentLength", contentLength));
 
-            RegisterClient(myList);
-        }
-        public void RegisterClient(ArrayList clientMsgToReg)
-        {
-
+            return myList;
         }
         public String getHeaderData(String msgRecieved, String headertoFind, String delimitedtoStopAt)
         {
@@ -75,7 +71,6 @@ namespace SIP_Console_App
             end = msgRecieved.IndexOf(delimitedtoStopAt, start);
             returnString = msgRecieved.Substring(start + headertoFind.Length, end - (start + headertoFind.Length));
             return returnString;
-            
         }
     }
 }

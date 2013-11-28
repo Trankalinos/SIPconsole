@@ -76,7 +76,7 @@ namespace SIP_Console_App
             switch (sipMsg)
             {
                 case ("REGISTER"):
-                    registrarServer.recieveMsg(fullMsg);
+                    locationServer.StoreUser(registrarServer.recieveMsg(fullMsg));
                     break;
                 case ("INVITE"):
                     
