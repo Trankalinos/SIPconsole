@@ -77,5 +77,12 @@ namespace SIP_Console_App
             return returnString;
             
         }
+
+        public Boolean userExists(String username, String address)
+        {
+            // check the location server
+            // if they exist, return true, else return false
+            return true;
+        }
     }
 }

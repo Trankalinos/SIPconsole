@@ -15,10 +15,14 @@ namespace SIP_Console_App
         private locationServer locationServer;
         private redirectServer redirectServer;
         private registrarServer registrarServer;
+        
         private const int listenPort = 5060;
+        protected UdpClient listener;
+        protected String clientIP;
 
         public proxyServer()
         {
+            listener = new UdpClient(listenPort);
             registrarServer = new registrarServer();
             redirectServer = new redirectServer();
             locationServer = new locationServer();
@@ -28,7 +32,6 @@ namespace SIP_Console_App
         public void Start()
         {
             bool done = false;
-            UdpClient listener = new UdpClient(listenPort);
             IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, listenPort);
             string received_data;
             byte[] receive_byte_array;
@@ -39,9 +42,10 @@ namespace SIP_Console_App
                 {
                     receive_byte_array = listener.Receive(ref groupEP);
                     Console.WriteLine("Received a broadcast from {0}", groupEP.ToString());
+                    clientIP = groupEP.ToString();
                     received_data = Encoding.ASCII.GetString(receive_byte_array, 0, receive_byte_array.Length);
                     //Console.WriteLine("data follows \n{0}\n\n", received_data);
-                   sortMessage(received_data);
+                    sortMessage(received_data);
                 }
             }
             catch (Exception e)
@@ -79,8 +83,10 @@ namespace SIP_Console_App
                     registrarServer.recieveMsg(fullMsg);
                     break;
                 case ("INVITE"):
-                    
-                    // This.forward(INVITE)
+                    ArrayList kvpList = new ArrayList();
+                    kvpList = this.receiveInviteMsg(fullMsg);
+                    this.fwdReq(kvpList, fullMsg);
+                    break;
                 case ("OK"):
                     // do something
                     // OK
@@ -130,8 +136,43 @@ namespace SIP_Console_App
             return temp;
         }
 
-        public void fwdReq()
+        public void fwdReq(ArrayList kvpList, String msg)
         {
+            // send our stuff to Registrar to check if user exists
+            // if so, forward the request to the user and return the message to client
+            // else, do nothing and terminate the session and send an error message to client
+            String username = "";
+            String recipientAddress = "";
+            foreach (KeyValuePair<String, String> kvp in kvpList)
+            {
+                if (kvp.Key.Equals("To: ")) username = kvp.Value;
+                else if (kvp.Key.Equals("ToAddress: ")) recipientAddress = kvp.Value;
+            }
+
+            Boolean cont = registrarServer.userExists(username, recipientAddress);
+            if (cont)
+            {
+                // forward the request to the recipient of the call
+                try
+                {
+                    IPEndPoint addyR = new IPEndPoint(Convert.ToInt32(recipientAddress), listenPort);
+                    byte[] byteArray = Encoding.ASCII.GetBytes(msg);
+                    // create response message
+                    // response = createResponseMsg(200, "OK", blah blah blah)
+                    listener.Send(byteArray, byteArray.Length, addyR);
+                    // listener.Send(newByte, newByte.Length, clientIP);
+                    
+                }
+                catch (Exception e) 
+                {
+                    Console.WriteLine(e.ToString());
+                }
+                
+            }
+            else
+            {
+                // else, terminate the session.
+            }
 
         }
 
@@ -143,7 +184,8 @@ namespace SIP_Console_App
             String via = getHeaderData(msg, "Via: ", ";");
             String branch = getHeaderData(msg, "branch=", " ");
             String maxForwards = getHeaderData(msg, "Max-Forwards: ", "\r\n");
-            String to = getHeaderData(msg, "To: ", "\r\n");
+            String to = getHeaderData(msg, "To: ", " <");
+            String toAddress = getHeaderData(msg, ("To: " + to +"<"), ">");
             String from = getHeaderData(msg, "From: ", ";");
             String tag = getHeaderData(msg, "tag=", "\r\n");
             String callID = getHeaderData(msg, "Call-ID: ", "\r\n");
@@ -162,6 +204,7 @@ namespace SIP_Console_App
             kvpList.Add(new KeyValuePair<String, String>("branch=", branch));
             kvpList.Add(new KeyValuePair<String, String>("Max-Forwards:", maxForwards));
             kvpList.Add(new KeyValuePair<String, String>("To: ", to));
+            kvpList.Add(new KeyValuePair<String, String>("ToAddress: ", toAddress));
             kvpList.Add(new KeyValuePair<String, String>("From: ", from));
             kvpList.Add(new KeyValuePair<String, String>("tag=", tag));
             kvpList.Add(new KeyValuePair<String, String>("Call-ID: ", callID));
