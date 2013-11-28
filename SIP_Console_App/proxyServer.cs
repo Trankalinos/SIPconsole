@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 
-
 namespace SIP_Console_App
 {
     class proxyServer
@@ -103,7 +102,8 @@ namespace SIP_Console_App
             }
         }
 
-        public String createResponseMsg(int code, String sipMsg, String from, String to, String callID, String via, String callSeq, String contact, int contentLength, String contentType)
+        public String createResponseMsg(int code, String sipMsg, String via, String from, String to, String callID, 
+            String callSeq, String contact, String contentLength, String contentType)
         {
             String protocol = "SIP/2.0/UDP";
             String message = "";
@@ -119,9 +119,6 @@ namespace SIP_Console_App
             
             return message;
         }
-
-        // Index of
-        // Substring
 
         public String getHeaderData(String msg, String header, String delimiter)
         {
@@ -143,10 +140,31 @@ namespace SIP_Console_App
             // else, do nothing and terminate the session and send an error message to client
             String username = "";
             String recipientAddress = "";
+            String from = "";
+            String via = "";
+            String branch = "";
+            String maxFwd = "";
+            String tag = "";
+            String callID = "";
+            String callSeq = "";
+            String contact = "";
+            String contentType = "";
+            String contentLength = "";
+
             foreach (KeyValuePair<String, String> kvp in kvpList)
             {
                 if (kvp.Key.Equals("To: ")) username = kvp.Value;
                 else if (kvp.Key.Equals("ToAddress: ")) recipientAddress = kvp.Value;
+                else if (kvp.Key.Equals("From: ")) from = kvp.Value;
+                else if (kvp.Key.Equals("Via: ")) via = kvp.Value;
+                else if (kvp.Key.Equals("branch=")) branch = kvp.Value;
+                else if (kvp.Key.Equals("Max Forwards: ")) maxFwd = kvp.Value;
+                else if (kvp.Key.Equals("tag=")) tag = kvp.Value;
+                else if (kvp.Key.Equals("callID: ")) callID = kvp.Value;
+                else if (kvp.Key.Equals("CSeq: ")) callSeq = kvp.Value;
+                else if (kvp.Key.Equals("Contact: ")) contact = kvp.Value;
+                else if (kvp.Key.Equals("Content-Type: ")) contentType = kvp.Value;
+                else if (kvp.Key.Equals("Content-Length: ")) contentLength = kvp.Value;
             }
 
             Boolean cont = registrarServer.userExists(username, recipientAddress);
@@ -158,10 +176,20 @@ namespace SIP_Console_App
                     IPEndPoint addyR = new IPEndPoint(Convert.ToInt32(recipientAddress), listenPort);
                     byte[] byteArray = Encoding.ASCII.GetBytes(msg);
                     // create response message
-                    // response = createResponseMsg(200, "OK", blah blah blah)
+                    String response = createResponseMsg(
+                        200,                                            // code
+                        "OK",                                           // sipMsg
+                        (via + ";" + branch),                           // via 
+                        (username + " <" + recipientAddress + ">"),     // to
+                        clientIP,                                       // from
+                        callID,                                         // callID
+                        callSeq + " INVITE",                            // call sequence
+                        contact,                                        // contact
+                        contentType,                                    // content-type
+                        contentLength                                   // content-length
+                    );
                     listener.Send(byteArray, byteArray.Length, addyR);
-                    // listener.Send(newByte, newByte.Length, clientIP);
-                    
+                    sendRes(new IPEndPoint(Convert.ToInt32(clientIP), listenPort), response);
                 }
                 catch (Exception e) 
                 {
@@ -173,7 +201,12 @@ namespace SIP_Console_App
             {
                 // else, terminate the session.
             }
+        }
 
+        public void sendRes(IPEndPoint client, String response)
+        {
+            byte[] responseByteArray = Encoding.ASCII.GetBytes(response);
+            listener.Send(responseByteArray, responseByteArray.Length, client);
         }
 
         public ArrayList receiveInviteMsg(String msg)
@@ -194,15 +227,10 @@ namespace SIP_Console_App
             String contentType = getHeaderData(msg, "Content-Type: ", "\r\n");
             String contentLength = getHeaderData(msg, "Content-Length: ", "\r\n");
 
-            /*String[] headers = {"Request", "Via: ", "branch=", "Max-Forwards: ", "To: ", "From: ", 
-                               "tag=", "Call-ID: ", "CSeq: ", "Contact: ", "Content-Type: ",
-                               "Content-Length: "};
-            */
-
             kvpList.Add(new KeyValuePair<String, String>("Request: ", request));
             kvpList.Add(new KeyValuePair<String, String>("Via: ", via));
             kvpList.Add(new KeyValuePair<String, String>("branch=", branch));
-            kvpList.Add(new KeyValuePair<String, String>("Max-Forwards:", maxForwards));
+            kvpList.Add(new KeyValuePair<String, String>("Max-Forwards: ", maxForwards));
             kvpList.Add(new KeyValuePair<String, String>("To: ", to));
             kvpList.Add(new KeyValuePair<String, String>("ToAddress: ", toAddress));
             kvpList.Add(new KeyValuePair<String, String>("From: ", from));
