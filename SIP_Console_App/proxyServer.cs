@@ -43,7 +43,7 @@ namespace SIP_Console_App
                     Console.WriteLine("Received a broadcast from {0}", groupEP.ToString());
                     clientIP = groupEP.ToString();
                     received_data = Encoding.ASCII.GetString(receive_byte_array, 0, receive_byte_array.Length);
-                    //Console.WriteLine("data follows \n{0}\n\n", received_data);
+                    Console.WriteLine("data follows \n{0}\n\n", received_data);
                     sortMessage(received_data);
                 }
             }
@@ -79,7 +79,8 @@ namespace SIP_Console_App
             switch (sipMsg)
             {
                 case ("REGISTER"):
-                    locationServer.StoreUser(registrarServer.recieveMsg(fullMsg));
+                    ArrayList clientInfo = locationServer.StoreUser(registrarServer.recieveMsg(fullMsg));
+                    sendRegisterResponse(clientInfo);
                     break;
                 case ("INVITE"):
                     ArrayList kvpList = new ArrayList();
@@ -97,6 +98,8 @@ namespace SIP_Console_App
                     // This.connection(BYE);
                 case ("ACK"):
                     // do something
+                case ("OPTIONS"):
+                // do something
 
                 default: return; // do nothing
             }
@@ -150,6 +153,7 @@ namespace SIP_Console_App
             String contact = "";
             String contentType = "";
             String contentLength = "";
+            String clientIPAddress = null;
 
             foreach (KeyValuePair<String, String> kvp in kvpList)
             {
@@ -165,6 +169,7 @@ namespace SIP_Console_App
                 else if (kvp.Key.Equals("Contact: ")) contact = kvp.Value;
                 else if (kvp.Key.Equals("Content-Type: ")) contentType = kvp.Value;
                 else if (kvp.Key.Equals("Content-Length: ")) contentLength = kvp.Value;
+                else if (kvp.Key.Equals("clientIP")) clientIPAddress = kvp.Value;
             }
 
             Boolean cont = registrarServer.userExists(username, recipientAddress);
@@ -173,7 +178,7 @@ namespace SIP_Console_App
                 // forward the request to the recipient of the call
                 try
                 {
-                    IPEndPoint addyR = new IPEndPoint(Convert.ToInt32(recipientAddress), listenPort);
+                    IPEndPoint addyR = new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort);
                     byte[] byteArray = Encoding.ASCII.GetBytes(msg);
                     // create response message
                     String response = createResponseMsg(
@@ -181,7 +186,7 @@ namespace SIP_Console_App
                         "OK",                                           // sipMsg
                         (via + ";" + branch),                           // via 
                         (username + " <" + recipientAddress + ">"),     // to
-                        clientIP,                                       // from
+                        from,                                       // from
                         callID,                                         // callID
                         callSeq + " INVITE",                            // call sequence
                         contact,                                        // contact
@@ -189,7 +194,7 @@ namespace SIP_Console_App
                         contentLength                                   // content-length
                     );
                     listener.Send(byteArray, byteArray.Length, addyR);
-                    sendRes(new IPEndPoint(Convert.ToInt32(clientIP), listenPort), response);
+                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIP), listenPort), response);
                 }
                 catch (Exception e) 
                 {
@@ -242,6 +247,48 @@ namespace SIP_Console_App
             kvpList.Add(new KeyValuePair<String, String>("Content-Length: ", contentLength));
 
             return kvpList;
+        }
+        public void sendRegisterResponse(ArrayList clientInfo)
+        {
+            String to = "";
+            String from = "";
+            String via = "";
+            String branch = "";
+            String maxFwd = "";
+            String tag = "";
+            String callID = "";
+            String callSeq = "";
+            String contact = "";
+            String contentLength = "";
+            String clientIPAddress = null;
+
+            foreach (KeyValuePair<String, String> kvp in clientInfo)
+            {
+                if (kvp.Key.Equals("to")) to = kvp.Value;
+                else if (kvp.Key.Equals("from")) from = kvp.Value;
+                else if (kvp.Key.Equals("via")) via = kvp.Value;
+                else if (kvp.Key.Equals("branch")) branch = kvp.Value;
+                else if (kvp.Key.Equals("tag")) tag = kvp.Value;
+                else if (kvp.Key.Equals("callID")) callID = kvp.Value;
+                else if (kvp.Key.Equals("cSeq")) callSeq = kvp.Value;
+                else if (kvp.Key.Equals("contact")) contact = kvp.Value;
+                else if (kvp.Key.Equals("contentLength")) contentLength = kvp.Value;
+                else if (kvp.Key.Equals("clientIP")) clientIPAddress = kvp.Value;
+            }
+
+         String response = "SIP/2.0 200 Registration sucessful\r\n"
+                + "Via: SIP/2.0/UDP " + clientIPAddress + ";"
+                + "rport=" + "5060" + ";received=" + from + ";"
+                + "branch=" + branch + "\r\n"
+                + "From: " + "<sip:" + from + ">;tag=" + tag + "\r\n"
+                + "To: " + "<sip:" + to + ">;tag=" + tag + "\r\n"
+                + "Call-ID: " + callID + "\r\n"
+                + "CSeq: " + Convert.ToString(Convert.ToInt32(callSeq) + 1) + " REGISTER\r\n"
+                + "Contact: <sip:" + to + ":" + "5060" + ">\r\n"
+                + "Content-Length: " + contentLength + "\r\n"
+                + "Content-Type: application/sdp\r\n"
+                ;
+         sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIPAddress), listenPort), response);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace SIP_Console_App
             returnString = msgRecieved.Substring(start + headertoFind.Length, end - (start + headertoFind.Length));
             return returnString;
         }
-        public void StoreUser(ArrayList clientInfo)
+        public ArrayList StoreUser(ArrayList clientInfo)
         {
             String userName = null; ;
             String userIPAddress = null;
@@ -38,7 +38,7 @@ namespace SIP_Console_App
             Boolean usernameExists = false;
 
 
-            foreach(KeyValuePair<String, String> dt in clientInfo) {
+          /*  foreach(KeyValuePair<String, String> dt in clientInfo) {
                 if (dt.Key == "clientIP")
                 {
                     userIPAddress = dt.Value;
@@ -62,7 +62,8 @@ namespace SIP_Console_App
                     }
                 }
                 wr.WriteLine(userName + "," + userIPAddress + "," + expiry);
-            }
+            }*/
+            return clientInfo;
         }
     }
 }

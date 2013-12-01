@@ -31,10 +31,12 @@ namespace SIP_Console_App
             String userAgent;
             String expires;
             String contentLength;
+            String via;
             ArrayList myList = new ArrayList();
 
             clientIP = getHeaderData(msgRecieved, "sip:", " ");
             branch = getHeaderData(msgRecieved, "branch=", "\r\n");
+            via = getHeaderData(msgRecieved, "Via: ", "\r\n");
             from = getHeaderData(msgRecieved, "From: <", ">");
             to = getHeaderData(msgRecieved, "To: <", ">");
             tag = getHeaderData(msgRecieved, "tag=", "\r\n");
@@ -48,6 +50,7 @@ namespace SIP_Console_App
 
             myList.Add(new KeyValuePair<String, String>("clientIP", clientIP));
             myList.Add(new KeyValuePair<String, String>("branch", branch));
+            myList.Add(new KeyValuePair<String, String>("via", via));
             myList.Add(new KeyValuePair<String, String>("from", from));
             myList.Add(new KeyValuePair<String, String>("to", to));
             myList.Add(new KeyValuePair<String, String>("tag", tag));
