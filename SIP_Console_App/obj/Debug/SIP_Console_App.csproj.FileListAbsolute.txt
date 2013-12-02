@@ -7,3 +7,9 @@ C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_
 C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_App\obj\Debug\SIP_Console_App.exe
 C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_App\obj\Debug\SIP_Console_App.pdb
 C:\Users\Cole\Documents\Visual Studio 2012\Projects\SIP_Console_App\SIP_Console_App\obj\Debug\SIP_Console_App.csprojResolveAssemblyReference.cache
+H:\SipConsole\SIP_Console_App\bin\Debug\SIP_Console_App.exe.config
+H:\SipConsole\SIP_Console_App\obj\Debug\SIP_Console_App.exe
+H:\SipConsole\SIP_Console_App\obj\Debug\SIP_Console_App.pdb
+H:\SipConsole\SIP_Console_App\bin\Debug\SIP_Console_App.exe
+H:\SipConsole\SIP_Console_App\bin\Debug\SIP_Console_App.pdb
+H:\SipConsole\SIP_Console_App\obj\Debug\SIP_Console_App.csprojResolveAssemblyReference.cache
