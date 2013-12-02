@@ -35,10 +35,14 @@ namespace SIP_Console_App
             String userIPAddress = null;
             String expiry = null;
             String line = null;
+            String uName = null;
+            int lineCount = 0;
+            int lineCountSaved = 0;
             Boolean usernameExists = false;
+            ArrayList userList = new ArrayList();
 
 
-          /*  foreach(KeyValuePair<String, String> dt in clientInfo) {
+          foreach(KeyValuePair<String, String> dt in clientInfo) {
                 if (dt.Key == "clientIP")
                 {
                     userIPAddress = dt.Value;
@@ -50,19 +54,36 @@ namespace SIP_Console_App
                     userName = getData(dt.Value, ":", "@");
                 }
             }
-            using (StreamWriter wr = File.AppendText("clients.txt"))
+          StreamReader file = new StreamReader(@"clients.txt");
+          while ((line = file.ReadLine()) != null)
+          {
+              uName = line.Substring(0, line.IndexOf(",", 0));
+              if (uName.Equals(userName))
+              {
+                  usernameExists = true;
+                  lineCountSaved = lineCount;
+              }
+              lineCount++;
+              userList.Add(line);
+          }
+          file.Close();
+            using (StreamWriter wr = File.CreateText("clients.txt"))
             {
-                StreamReader file = new StreamReader(@"clients.txt");
-                while ((line = file.ReadLine()) != null)
+                if (!usernameExists)
                 {
-                    line = line.Substring(0, line.IndexOf(",", 0));
-                    if (line.Equals(userName))
-                    {
-                        usernameExists = true;
-                    }
+                    wr.WriteLine(userName + "," + userIPAddress + "," + expiry);
                 }
-                wr.WriteLine(userName + "," + userIPAddress + "," + expiry);
-            }*/
+                else
+                {
+                    userList.RemoveAt(lineCountSaved);
+                    wr.Write("");
+                    foreach (String a in userList)
+                    {
+                        wr.WriteLine(a);
+                    }
+                    wr.WriteLine(userName + "," + userIPAddress + "," + expiry);
+                }
+            }
             return clientInfo;
         }
     }
