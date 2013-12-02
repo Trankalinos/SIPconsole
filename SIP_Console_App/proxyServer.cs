@@ -72,10 +72,6 @@ namespace SIP_Console_App
         }
         public void sipProtocol(String sipMsg, String fullMsg)
         {
-            // key, value pairs
-            // SWITCH CASE STATEMENTS
-                // INVITE, REGISTER
-                // (OK) CANCEL BYE ACK
             switch (sipMsg)
             {
                 case ("REGISTER"):
@@ -88,16 +84,19 @@ namespace SIP_Console_App
                     this.fwdReq(kvpList, fullMsg);
                     break;
                 case ("OK"):
-                    // do something
+                    Console.WriteLine("Received an OK");
+                    break;
                     // OK
                 case ("CANCEL"):
-                    // do something
+                    Console.WriteLine("Received a CANCEL");
+                    break;
                     // Cancel transaction
                 case ("BYE"):
                     // do something
                     // This.connection(BYE);
                 case ("ACK"):
-                    // do something
+                    // connect the users
+                    
                 case ("OPTIONS"):
                 // do something
 
@@ -109,9 +108,10 @@ namespace SIP_Console_App
             String callSeq, String contact, String contentLength, String contentType)
         {
             String protocol = "SIP/2.0/UDP";
+            String version = "SIP/2.0";
             String message = "";
 
-            message += protocol + " " + code + " " + sipMsg + "\r\n";
+            message += version + " " + code + " " + sipMsg + "\r\n";
             message += "Via: " + protocol + " " + via + "\r\n";
             message += "To: " + to + "\r\n";
             message += "Call-ID: " + callID + "\r\n";
@@ -171,7 +171,7 @@ namespace SIP_Console_App
                 else if (kvp.Key.Equals("Content-Length: ")) contentLength = kvp.Value;
                 else if (kvp.Key.Equals("clientIP")) clientIPAddress = kvp.Value;
             }
-
+            recipientAddress = "142.232.240.194";
             Boolean cont = registrarServer.userExists(username, recipientAddress);
             if (cont)
             {
@@ -181,20 +181,49 @@ namespace SIP_Console_App
                     IPEndPoint addyR = new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort);
                     byte[] byteArray = Encoding.ASCII.GetBytes(msg);
                     // create response message
-                    String response = createResponseMsg(
+                    String trying = createResponseMsg(
+                        100,                                            // code
+                        "Trying",                                        // sipMsg
+                        (via + ";" + branch),                           // via 
+                        username,                                       // to
+                        from,                                           // from
+                        callID,                                         // callID
+                        Convert.ToString(Convert.ToInt32(callSeq) + 1) + " INVITE",                            // call sequence
+                        contact,                                        // contact
+                        contentType,                                    // content-type
+                        contentLength                                   // content-length
+                    );
+
+                    listener.Send(byteArray, byteArray.Length, addyR);
+                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIP), listenPort), trying);
+
+                    String ringing = createResponseMsg(
+                        180,                                            // code
+                        "Ringing",                                       // sipMsg
+                        (via + ";" + branch),                           // via 
+                        username,                                       // to
+                        from,                                           // from
+                        callID,                                         // callID
+                        Convert.ToString(Convert.ToInt32(callSeq) + 1) + " INVITE",                            // call sequence
+                        contact,                                        // contact
+                        contentType,                                    // content-type
+                        contentLength                                   // content-length
+                    );
+
+                    String ok = createResponseMsg(
                         200,                                            // code
                         "OK",                                           // sipMsg
                         (via + ";" + branch),                           // via 
-                        (username + " <" + recipientAddress + ">"),     // to
-                        from,                                       // from
+                        username,                                       // to
+                        from,                                           // from
                         callID,                                         // callID
-                        callSeq + " INVITE",                            // call sequence
+                        Convert.ToString(Convert.ToInt32(callSeq) + 1) + " INVITE",                            // call sequence
                         contact,                                        // contact
                         contentType,                                    // content-type
                         contentLength                                   // content-length
                     );
                     listener.Send(byteArray, byteArray.Length, addyR);
-                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIP), listenPort), response);
+                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIP), listenPort), ok);
                 }
                 catch (Exception e) 
                 {
@@ -219,12 +248,11 @@ namespace SIP_Console_App
             ArrayList kvpList = new ArrayList();
 
             String request = "INVITE";
-            String via = getHeaderData(msg, "Via: ", ";");
+            String via = getHeaderData(msg, "Via: SIP/2.0/UDP ", ";");
             String branch = getHeaderData(msg, "branch=", " ");
             String maxForwards = getHeaderData(msg, "Max-Forwards: ", "\r\n");
-            String to = getHeaderData(msg, "To: ", " <");
-            String toAddress = getHeaderData(msg, ("To: " + to +"<"), ">");
-            String from = getHeaderData(msg, "From: ", ";");
+            String to = getHeaderData(msg, "To: <", ">");
+            String from = getHeaderData(msg, "From: <", ">");
             String tag = getHeaderData(msg, "tag=", "\r\n");
             String callID = getHeaderData(msg, "Call-ID: ", "\r\n");
             String callSeq = getHeaderData(msg, "CSeq: ", "INVITE");
@@ -237,7 +265,6 @@ namespace SIP_Console_App
             kvpList.Add(new KeyValuePair<String, String>("branch=", branch));
             kvpList.Add(new KeyValuePair<String, String>("Max-Forwards: ", maxForwards));
             kvpList.Add(new KeyValuePair<String, String>("To: ", to));
-            kvpList.Add(new KeyValuePair<String, String>("ToAddress: ", toAddress));
             kvpList.Add(new KeyValuePair<String, String>("From: ", from));
             kvpList.Add(new KeyValuePair<String, String>("tag=", tag));
             kvpList.Add(new KeyValuePair<String, String>("Call-ID: ", callID));
@@ -248,13 +275,13 @@ namespace SIP_Console_App
 
             return kvpList;
         }
+
         public void sendRegisterResponse(ArrayList clientInfo)
         {
             String to = "";
             String from = "";
             String via = "";
             String branch = "";
-            String maxFwd = "";
             String tag = "";
             String callID = "";
             String callSeq = "";
