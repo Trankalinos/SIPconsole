@@ -115,12 +115,13 @@ namespace SIP_Console_App
 
             message += version + " " + code + " " + sipMsg + "\r\n";
             message += "Via: " + protocol + " " + via + "\r\n";
+            message += "From: " + from + "\r\n";
             message += "To: " + to + "\r\n";
             message += "Call-ID: " + callID + "\r\n";
             message += "CSeq: " + callSeq + "\r\n";
             message += "Contact: " + contact + "\r\n";
             message += "Content-Type: " + contentType + "\r\n";
-            message += "Content-Length: " + contentLength + "\r\n";
+            message += "Content-Length: " + contentLength + "\r\n\r\n";
             
             return message;
         }
@@ -158,7 +159,7 @@ namespace SIP_Console_App
             String clientIPAddress = null;
             Boolean cont = false;
 
-            foreach (KeyValuePair<String, String> kvp in kvpList)
+           foreach (KeyValuePair<String, String> kvp in kvpList)
             {
                 if (kvp.Key.Equals("To: ")) username = kvp.Value;
                 else if (kvp.Key.Equals("ToAddress: ")) recipientAddress = kvp.Value;
@@ -184,8 +185,10 @@ namespace SIP_Console_App
                 // forward the request to the recipient of the call
                 try
                 {
-                    IPEndPoint addyR = new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort);
-                    byte[] byteArray = Encoding.ASCII.GetBytes(msg);
+                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort), msg);
+                   // IPEndPoint addyR = new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort);
+                   // byte[] byteArray = Encoding.ASCII.GetBytes(msg);
+                   // listener.Send(byteArray, byteArray.Length, addyR);
                     // create response message
                     String trying = createResponseMsg(
                         100,                                            // code
@@ -194,23 +197,23 @@ namespace SIP_Console_App
                         username,                                       // to
                         from,                                           // from
                         callID,                                         // callID
-                        Convert.ToString(Convert.ToInt32(callSeq) + 1) + " INVITE",                            // call sequence
+                        callSeq + " INVITE",                            // call sequence
                         contact,                                        // contact
                         contentType,                                    // content-type
                         contentLength                                   // content-length
                     );
 
-                    listener.Send(byteArray, byteArray.Length, addyR);
-                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIP), listenPort), trying);
+                    //listener.Send(byteArray, byteArray.Length, addyR);
+                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(getIPAddress(locationServer.getData(from, ":", "@"))), listenPort), trying);
 
-                    String ringing = createResponseMsg(
+                    /*String ringing = createResponseMsg(
                         180,                                            // code
                         "Ringing",                                       // sipMsg
                         (via + ";" + branch),                           // via 
                         username,                                       // to
                         from,                                           // from
                         callID,                                         // callID
-                        Convert.ToString(Convert.ToInt32(callSeq) + 1) + " INVITE",                            // call sequence
+                        callSeq + " INVITE",                            // call sequence
                         contact,                                        // contact
                         contentType,                                    // content-type
                         contentLength                                   // content-length
@@ -223,13 +226,13 @@ namespace SIP_Console_App
                         username,                                       // to
                         from,                                           // from
                         callID,                                         // callID
-                        Convert.ToString(Convert.ToInt32(callSeq) + 1) + " INVITE",                            // call sequence
+                        callSeq + " INVITE",                            // call sequence
                         contact,                                        // contact
                         contentType,                                    // content-type
                         contentLength                                   // content-length
                     );
                     listener.Send(byteArray, byteArray.Length, addyR);
-                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIP), listenPort), ok);
+                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIP), listenPort), ok);*/
                 }
                 catch (Exception e) 
                 {
@@ -309,7 +312,7 @@ namespace SIP_Console_App
                 else if (kvp.Key.Equals("contentLength")) contentLength = kvp.Value;
                 else if (kvp.Key.Equals("expires")) expires = kvp.Value;
             }
-        clientIPAddress = contact.Substring(contact.IndexOf("@") + 1, (contact.IndexOf(";") - contact.IndexOf("@") - 1));
+         clientIPAddress = contact.Substring(contact.IndexOf("@") + 1, (contact.IndexOf(";") - contact.IndexOf("@") - 1));
          String response = "SIP/2.0 200 Registration sucessful\r\n"
                 + "Via: " + via + ";"
                 + "rport=" + "5060" + ";received=" + clientIPAddress + ";"
@@ -327,7 +330,7 @@ namespace SIP_Console_App
         public String getIPAddress(String userName)
         {
             String foundIPAddress = null;
-            locationServer.getIPAddressFromDatabase(userName);
+            foundIPAddress = locationServer.getIPAddressFromDatabase(userName);
             return foundIPAddress;
         }
        
