@@ -43,18 +43,21 @@ namespace SIP_Console_App
 
 
           foreach(KeyValuePair<String, String> dt in clientInfo) {
-                if (dt.Key == "clientIP")
+                if (dt.Key == "contact")
                 {
-                    userIPAddress = dt.Value;
+                    userIPAddress = dt.Value.Substring(dt.Value.IndexOf("@") + 1, (dt.Value.IndexOf(";") - dt.Value.IndexOf("@") - 1));
                 }
                 else if (dt.Key == "expires")
                 {
                     expiry = dt.Value;
-                } else if (dt.Key == "to") {
+                } else if (dt.Key == "to") 
+                {
                     userName = getData(dt.Value, ":", "@");
                 }
             }
           StreamReader file = new StreamReader(@"clients.txt");
+          lineCountSaved = 0;
+          lineCount = 0;
           while ((line = file.ReadLine()) != null)
           {
               uName = line.Substring(0, line.IndexOf(",", 0));
@@ -67,16 +70,22 @@ namespace SIP_Console_App
               userList.Add(line);
           }
           file.Close();
-            using (StreamWriter wr = File.CreateText("clients.txt"))
+            using (StreamWriter wr = new StreamWriter("clients.txt"))
             {
                 if (!usernameExists)
                 {
+                    if (userList.Count > 0)
+                    {
+                        foreach (String a in userList)
+                        {
+                            wr.WriteLine(a);
+                        }
+                    }
                     wr.WriteLine(userName + "," + userIPAddress + "," + expiry);
                 }
                 else
                 {
                     userList.RemoveAt(lineCountSaved);
-                    wr.Write("");
                     foreach (String a in userList)
                     {
                         wr.WriteLine(a);
@@ -85,6 +94,50 @@ namespace SIP_Console_App
                 }
             }
             return clientInfo;
+        }
+        public String getIPAddressFromDatabase(String userName)
+        {
+            String uName = null;
+            String line = null;
+            int lineCount = 0;
+            int lineCountSaved = 0;
+            Boolean usernameExists = false;
+            ArrayList userList = new ArrayList();
+            String ipAddressFound = null;
+            using(StreamReader file = new StreamReader(@"clients.txt")) 
+            {
+                lineCountSaved = 0;
+                lineCount = 0;
+                while ((line = file.ReadLine()) != null)
+                {
+                    uName = line.Substring(0, line.IndexOf(",", 0));
+                    if (uName.Equals(userName))
+                    {
+                        usernameExists = true;
+                        lineCountSaved = lineCount;
+                    }
+                    lineCount++;
+                    userList.Add(line);
+                }
+            }
+            if (usernameExists)
+            {
+                 line = null;
+                 line = (string)userList[lineCountSaved];
+                if (line != null)
+                {
+                    ipAddressFound = line.Substring(line.IndexOf(",", 0)+1, (line.IndexOf(",", line.IndexOf(",", 0) + 1) - line.IndexOf(",", 0)-1));
+                    return ipAddressFound;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

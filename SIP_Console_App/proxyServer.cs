@@ -14,6 +14,7 @@ namespace SIP_Console_App
         private locationServer locationServer;
         private redirectServer redirectServer;
         private registrarServer registrarServer;
+        private const String mytag = "DvF01HZK3K3QD";
         
         private const int listenPort = 5060;
         protected UdpClient listener;
@@ -50,6 +51,7 @@ namespace SIP_Console_App
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
+                Console.ReadLine();
             }
             listener.Close();
         }
@@ -154,6 +156,7 @@ namespace SIP_Console_App
             String contentType = "";
             String contentLength = "";
             String clientIPAddress = null;
+            Boolean cont = false;
 
             foreach (KeyValuePair<String, String> kvp in kvpList)
             {
@@ -171,8 +174,11 @@ namespace SIP_Console_App
                 else if (kvp.Key.Equals("Content-Length: ")) contentLength = kvp.Value;
                 else if (kvp.Key.Equals("clientIP")) clientIPAddress = kvp.Value;
             }
-            recipientAddress = "142.232.240.194";
-            Boolean cont = registrarServer.userExists(username, recipientAddress);
+            recipientAddress = getIPAddress(locationServer.getData(username, ":", "@"));
+            if (recipientAddress != null)
+            {
+                cont = true;
+            }
             if (cont)
             {
                 // forward the request to the recipient of the call
@@ -286,8 +292,9 @@ namespace SIP_Console_App
             String callID = "";
             String callSeq = "";
             String contact = "";
+            String expires = "";
             String contentLength = "";
-            String clientIPAddress = null;
+            String clientIPAddress = "";
 
             foreach (KeyValuePair<String, String> kvp in clientInfo)
             {
@@ -300,22 +307,29 @@ namespace SIP_Console_App
                 else if (kvp.Key.Equals("cSeq")) callSeq = kvp.Value;
                 else if (kvp.Key.Equals("contact")) contact = kvp.Value;
                 else if (kvp.Key.Equals("contentLength")) contentLength = kvp.Value;
-                else if (kvp.Key.Equals("clientIP")) clientIPAddress = kvp.Value;
+                else if (kvp.Key.Equals("expires")) expires = kvp.Value;
             }
-
+        clientIPAddress = contact.Substring(contact.IndexOf("@") + 1, (contact.IndexOf(";") - contact.IndexOf("@") - 1));
          String response = "SIP/2.0 200 Registration sucessful\r\n"
-                + "Via: SIP/2.0/UDP " + clientIPAddress + ";"
-                + "rport=" + "5060" + ";received=" + from + ";"
+                + "Via: " + via + ";"
+                + "rport=" + "5060" + ";received=" + clientIPAddress + ";"
                 + "branch=" + branch + "\r\n"
-                + "From: " + "<sip:" + from + ">;tag=" + tag + "\r\n"
-                + "To: " + "<sip:" + to + ">;tag=" + tag + "\r\n"
+                + "From: " + "<" + from + ">;tag=" + tag + "\r\n"
+                + "To: " + "<" + to + ">;tag=" + mytag + "\r\n"
                 + "Call-ID: " + callID + "\r\n"
-                + "CSeq: " + Convert.ToString(Convert.ToInt32(callSeq) + 1) + " REGISTER\r\n"
-                + "Contact: <sip:" + to + ":" + "5060" + ">\r\n"
-                + "Content-Length: " + contentLength + "\r\n"
-                + "Content-Type: application/sdp\r\n"
+                + "CSeq: " + callSeq + " REGISTER\r\n"
+                + "Contact: <" + contact + ">\r\n"
+                + "Expires: " + expires + "\r\n"
+                + "Content-Length: " + contentLength + "\r\n\r\n"
                 ;
          sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIPAddress), listenPort), response);
         }
+        public String getIPAddress(String userName)
+        {
+            String foundIPAddress = null;
+            locationServer.getIPAddressFromDatabase(userName);
+            return foundIPAddress;
+        }
+       
     }
 }
