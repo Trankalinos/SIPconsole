@@ -35,6 +35,16 @@ namespace SIP_Console_App
             IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, listenPort);
             string received_data;
             byte[] receive_byte_array;
+            IPHostEntry host;
+            host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    Console.WriteLine(ip.ToString());
+                    break;
+                }
+            }
             try
             {
                 Console.WriteLine("Server Listening");
@@ -44,7 +54,7 @@ namespace SIP_Console_App
                     Console.WriteLine("Received a broadcast from {0}", groupEP.ToString());
                     clientIP = groupEP.ToString();
                     received_data = Encoding.ASCII.GetString(receive_byte_array, 0, receive_byte_array.Length);
-                    Console.WriteLine("data follows \n{0}\n\n", received_data);
+                    //Console.WriteLine("data follows \n{0}\n\n", received_data);
                     sortMessage(received_data);
                 }
             }
@@ -67,39 +77,60 @@ namespace SIP_Console_App
                 String sipMsg = msgRecieved.Substring(0, firstSpace);
                 sipProtocol(sipMsg, msgRecieved);
             }
-            else
+            else if (msgRecieved.Length > 10)
             {
+                Console.WriteLine("data follows \n{0}\n\n", msgRecieved);
+                forwardResponseMsg(msgRecieved);
+            } else {
                 return;
             }
+        }
+        public void forwardResponseMsg(String msgRecieved) {
+            String to = getHeaderData(msgRecieved, "To: <", ">");
+            String recipientAddress = getIPAddress(locationServer.getData(to, ":", "@"));
+            sendRes(new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort), msgRecieved);
         }
         public void sipProtocol(String sipMsg, String fullMsg)
         {
             switch (sipMsg)
             {
                 case ("REGISTER"):
+                    Console.WriteLine("data follows \n{0}\n\n", fullMsg);
                     ArrayList clientInfo = locationServer.StoreUser(registrarServer.recieveMsg(fullMsg));
                     sendRegisterResponse(clientInfo);
                     break;
                 case ("INVITE"):
-                    ArrayList kvpList = new ArrayList();
-                    kvpList = this.receiveInviteMsg(fullMsg);
-                    this.fwdReq(kvpList, fullMsg);
+                    Console.WriteLine("data follows \n{0}\n\n", fullMsg);
+                   // ArrayList kvpList = new ArrayList();
+                  //  kvpList = this.receiveInviteMsg(fullMsg);
+                  //  this.fwdReq(kvpList, fullMsg);
+                    forwardResponseMsg(fullMsg);
                     break;
                 case ("OK"):
-                    Console.WriteLine("Received an OK");
+                    Console.WriteLine("data follows \n{0}\n\n", fullMsg);
+                    forwardResponseMsg(fullMsg);
                     break;
                     // OK
                 case ("CANCEL"):
-                    Console.WriteLine("Received a CANCEL");
+                    Console.WriteLine("data follows \n{0}\n\n", fullMsg);
+                    forwardResponseMsg(fullMsg);
                     break;
                     // Cancel transaction
                 case ("BYE"):
+                    Console.WriteLine("data follows \n{0}\n\n", fullMsg);
+                    forwardResponseMsg(fullMsg);
+                    break;
                     // do something
                     // This.connection(BYE);
                 case ("ACK"):
+                    Console.WriteLine("data follows \n{0}\n\n", fullMsg);
+                    forwardResponseMsg(fullMsg);
+                    break;
                     // connect the users
                     
                 case ("OPTIONS"):
+                    Console.WriteLine("data follows \n{0}\n\n", fullMsg);
+                    break;
                 // do something
 
                 default: return; // do nothing
@@ -146,7 +177,7 @@ namespace SIP_Console_App
             // else, do nothing and terminate the session and send an error message to client
             String username = "";
             String recipientAddress = "";
-            String from = "";
+            /*String from = "";
             String via = "";
             String branch = "";
             String maxFwd = "";
@@ -156,93 +187,94 @@ namespace SIP_Console_App
             String contact = "";
             String contentType = "";
             String contentLength = "";
-            String clientIPAddress = null;
+            String clientIPAddress = null;*/
             Boolean cont = false;
 
-           foreach (KeyValuePair<String, String> kvp in kvpList)
+            foreach (KeyValuePair<String, String> kvp in kvpList)
             {
                 if (kvp.Key.Equals("To: ")) username = kvp.Value;
-                else if (kvp.Key.Equals("ToAddress: ")) recipientAddress = kvp.Value;
-                else if (kvp.Key.Equals("From: ")) from = kvp.Value;
-                else if (kvp.Key.Equals("Via: ")) via = kvp.Value;
-                else if (kvp.Key.Equals("branch=")) branch = kvp.Value;
-                else if (kvp.Key.Equals("Max Forwards: ")) maxFwd = kvp.Value;
-                else if (kvp.Key.Equals("tag=")) tag = kvp.Value;
-                else if (kvp.Key.Equals("callID: ")) callID = kvp.Value;
-                else if (kvp.Key.Equals("CSeq: ")) callSeq = kvp.Value;
-                else if (kvp.Key.Equals("Contact: ")) contact = kvp.Value;
-                else if (kvp.Key.Equals("Content-Type: ")) contentType = kvp.Value;
-                else if (kvp.Key.Equals("Content-Length: ")) contentLength = kvp.Value;
-                else if (kvp.Key.Equals("clientIP")) clientIPAddress = kvp.Value;
-            }
-            recipientAddress = getIPAddress(locationServer.getData(username, ":", "@"));
-            if (recipientAddress != null)
-            {
-                cont = true;
-            }
-            if (cont)
-            {
-                // forward the request to the recipient of the call
-                try
+                /* else if (kvp.Key.Equals("ToAddress: ")) recipientAddress = kvp.Value;
+                 else if (kvp.Key.Equals("From: ")) from = kvp.Value;
+                 else if (kvp.Key.Equals("Via: ")) via = kvp.Value;
+                 else if (kvp.Key.Equals("branch=")) branch = kvp.Value;
+                 else if (kvp.Key.Equals("Max Forwards: ")) maxFwd = kvp.Value;
+                 else if (kvp.Key.Equals("tag=")) tag = kvp.Value;
+                 else if (kvp.Key.Equals("callID: ")) callID = kvp.Value;
+                 else if (kvp.Key.Equals("CSeq: ")) callSeq = kvp.Value;
+                 else if (kvp.Key.Equals("Contact: ")) contact = kvp.Value;
+                 else if (kvp.Key.Equals("Content-Type: ")) contentType = kvp.Value;
+                 else if (kvp.Key.Equals("Content-Length: ")) contentLength = kvp.Value;
+                 else if (kvp.Key.Equals("clientIP")) clientIPAddress = kvp.Value;
+             }*/
+                recipientAddress = getIPAddress(locationServer.getData(username, ":", "@"));
+                if (recipientAddress != null)
                 {
-                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort), msg);
-                   // IPEndPoint addyR = new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort);
-                   // byte[] byteArray = Encoding.ASCII.GetBytes(msg);
-                   // listener.Send(byteArray, byteArray.Length, addyR);
-                    // create response message
-                    String trying = createResponseMsg(
-                        100,                                            // code
-                        "Trying",                                        // sipMsg
-                        (via + ";" + branch),                           // via 
-                        username,                                       // to
-                        from,                                           // from
-                        callID,                                         // callID
-                        callSeq + " INVITE",                            // call sequence
-                        contact,                                        // contact
-                        contentType,                                    // content-type
-                        contentLength                                   // content-length
-                    );
-
-                    //listener.Send(byteArray, byteArray.Length, addyR);
-                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(getIPAddress(locationServer.getData(from, ":", "@"))), listenPort), trying);
-
-                    /*String ringing = createResponseMsg(
-                        180,                                            // code
-                        "Ringing",                                       // sipMsg
-                        (via + ";" + branch),                           // via 
-                        username,                                       // to
-                        from,                                           // from
-                        callID,                                         // callID
-                        callSeq + " INVITE",                            // call sequence
-                        contact,                                        // contact
-                        contentType,                                    // content-type
-                        contentLength                                   // content-length
-                    );
-
-                    String ok = createResponseMsg(
-                        200,                                            // code
-                        "OK",                                           // sipMsg
-                        (via + ";" + branch),                           // via 
-                        username,                                       // to
-                        from,                                           // from
-                        callID,                                         // callID
-                        callSeq + " INVITE",                            // call sequence
-                        contact,                                        // contact
-                        contentType,                                    // content-type
-                        contentLength                                   // content-length
-                    );
-                    listener.Send(byteArray, byteArray.Length, addyR);
-                    sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIP), listenPort), ok);*/
+                    cont = true;
                 }
-                catch (Exception e) 
+                if (cont)
                 {
-                    Console.WriteLine(e.ToString());
+                    // forward the request to the recipient of the call
+                    try
+                    {
+                        sendRes(new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort), msg);
+                        // IPEndPoint addyR = new IPEndPoint(System.Net.IPAddress.Parse(recipientAddress), listenPort);
+                        // byte[] byteArray = Encoding.ASCII.GetBytes(msg);
+                        // listener.Send(byteArray, byteArray.Length, addyR);
+                        // create response message
+                        /* String trying = createResponseMsg(
+                             100,                                            // code
+                             "Trying",                                        // sipMsg
+                             (via + ";" + branch),                           // via 
+                             username,                                       // to
+                             from,                                           // from
+                             callID,                                         // callID
+                             callSeq + " INVITE",                            // call sequence
+                             contact,                                        // contact
+                             contentType,                                    // content-type
+                             contentLength                                   // content-length
+                         );
+
+                         //listener.Send(byteArray, byteArray.Length, addyR);
+                         sendRes(new IPEndPoint(System.Net.IPAddress.Parse(getIPAddress(locationServer.getData(from, ":", "@"))), listenPort), trying);*/
+
+                        /*String ringing = createResponseMsg(
+                            180,                                            // code
+                            "Ringing",                                       // sipMsg
+                            (via + ";" + branch),                           // via 
+                            username,                                       // to
+                            from,                                           // from
+                            callID,                                         // callID
+                            callSeq + " INVITE",                            // call sequence
+                            contact,                                        // contact
+                            contentType,                                    // content-type
+                            contentLength                                   // content-length
+                        );
+
+                        String ok = createResponseMsg(
+                            200,                                            // code
+                            "OK",                                           // sipMsg
+                            (via + ";" + branch),                           // via 
+                            username,                                       // to
+                            from,                                           // from
+                            callID,                                         // callID
+                            callSeq + " INVITE",                            // call sequence
+                            contact,                                        // contact
+                            contentType,                                    // content-type
+                            contentLength                                   // content-length
+                        );
+                        listener.Send(byteArray, byteArray.Length, addyR);
+                        sendRes(new IPEndPoint(System.Net.IPAddress.Parse(clientIP), listenPort), ok);*/
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
+
                 }
-                
-            }
-            else
-            {
-                // else, terminate the session.
+                else
+                {
+                    // else, terminate the session.
+                }
             }
         }
 
@@ -312,7 +344,8 @@ namespace SIP_Console_App
                 else if (kvp.Key.Equals("contentLength")) contentLength = kvp.Value;
                 else if (kvp.Key.Equals("expires")) expires = kvp.Value;
             }
-         clientIPAddress = contact.Substring(contact.IndexOf("@") + 1, (contact.IndexOf(";") - contact.IndexOf("@") - 1));
+            clientIPAddress = contact.Substring(contact.IndexOf("@") + 1, (contact.IndexOf(":", contact.IndexOf("@")) - contact.IndexOf("@") - 1));
+         //clientIPAddress = contact.Substring(contact.IndexOf("@") + 1, (contact.IndexOf(";") - contact.IndexOf("@") - 1));
          String response = "SIP/2.0 200 Registration sucessful\r\n"
                 + "Via: " + via + ";"
                 + "rport=" + "5060" + ";received=" + clientIPAddress + ";"

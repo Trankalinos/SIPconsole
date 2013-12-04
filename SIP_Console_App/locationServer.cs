@@ -45,7 +45,8 @@ namespace SIP_Console_App
           foreach(KeyValuePair<String, String> dt in clientInfo) {
                 if (dt.Key == "contact")
                 {
-                    userIPAddress = dt.Value.Substring(dt.Value.IndexOf("@") + 1, (dt.Value.IndexOf(";") - dt.Value.IndexOf("@") - 1));
+                    userIPAddress = dt.Value.Substring(dt.Value.IndexOf("@") + 1, (dt.Value.IndexOf(":", dt.Value.IndexOf("@")) - dt.Value.IndexOf("@") - 1));
+                    //userIPAddress = dt.Value.Substring(dt.Value.IndexOf("@") + 1, (dt.Value.IndexOf(";") - dt.Value.IndexOf("@") - 1));
                 }
                 else if (dt.Key == "expires")
                 {
