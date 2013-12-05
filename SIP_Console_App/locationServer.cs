@@ -45,8 +45,8 @@ namespace SIP_Console_App
           foreach(KeyValuePair<String, String> dt in clientInfo) {
                 if (dt.Key == "contact")
                 {
-                    userIPAddress = dt.Value.Substring(dt.Value.IndexOf("@") + 1, (dt.Value.IndexOf(":", dt.Value.IndexOf("@")) - dt.Value.IndexOf("@") - 1));
-                    //userIPAddress = dt.Value.Substring(dt.Value.IndexOf("@") + 1, (dt.Value.IndexOf(";") - dt.Value.IndexOf("@") - 1));
+                    //userIPAddress = dt.Value.Substring(dt.Value.IndexOf("@") + 1, (dt.Value.IndexOf(":", dt.Value.IndexOf("@")) - dt.Value.IndexOf("@") - 1));
+                    userIPAddress = dt.Value.Substring(dt.Value.IndexOf("@") + 1, (dt.Value.IndexOf(";") - dt.Value.IndexOf("@") - 1));
                 }
                 else if (dt.Key == "expires")
                 {
@@ -56,21 +56,24 @@ namespace SIP_Console_App
                     userName = getData(dt.Value, ":", "@");
                 }
             }
-          StreamReader file = new StreamReader(@"clients.txt");
-          lineCountSaved = 0;
-          lineCount = 0;
-          while ((line = file.ReadLine()) != null)
+          if (File.Exists("clients.txt"))
           {
-              uName = line.Substring(0, line.IndexOf(",", 0));
-              if (uName.Equals(userName))
+              StreamReader file = new StreamReader(@"clients.txt");
+              lineCountSaved = 0;
+              lineCount = 0;
+              while ((line = file.ReadLine()) != null)
               {
-                  usernameExists = true;
-                  lineCountSaved = lineCount;
+                  uName = line.Substring(0, line.IndexOf(",", 0));
+                  if (uName.Equals(userName))
+                  {
+                      usernameExists = true;
+                      lineCountSaved = lineCount;
+                  }
+                  lineCount++;
+                  userList.Add(line);
               }
-              lineCount++;
-              userList.Add(line);
+              file.Close();
           }
-          file.Close();
             using (StreamWriter wr = new StreamWriter("clients.txt"))
             {
                 if (!usernameExists)
