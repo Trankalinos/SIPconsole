@@ -125,6 +125,7 @@ namespace SIP_Console_App
                     break;
                 case ("OPTIONS"):
                     Console.WriteLine("data follows \n{0}\n\n", fullMsg);
+                    forwardResponseMsg(fullMsg, false);
                     break;
                 default:
                     Console.WriteLine("data follows \n{0}\n\n", fullMsg);
